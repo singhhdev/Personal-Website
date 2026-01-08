@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Karanpreet Singh — SOC Analyst / Security Engineer | Malware & Windows Internals</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Karanpreet Singh — SOC Analyst / Security Engineer candidate specializing in malware analysis, Windows internals, IOC extraction, incident response support, and detection engineering. C++/Python tooling for triage and reporting." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://YOUR_DOMAIN_HERE/" />
+  <meta name="keywords" content="SOC Analyst, Security Engineer, Incident Response, SIEM, log analysis, threat hunting, detection engineering, IOC extraction, malware analysis, reverse engineering, Windows internals, WinDbg, x64dbg, IDA Pro, Ghidra, WDK, MITRE ATT&CK, Splunk, EDR" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Karanpreet Singh — SOC Analyst / Security Engineer" />
+  <meta property="og:description" content="Malware analysis, Windows internals, incident response support, IOC extraction, and detection engineering." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://YOUR_DOMAIN_HERE/" />
+  <meta property="og:image" content="https://YOUR_DOMAIN_HERE/og-image.png" />
+
+  <!-- Favicons (optional) -->
+  <!-- <link rel="icon" href="/favicon.ico" /> -->
+
+  <style>
+    :root{
+      --bg: #0a0a0a;
+      --panel: rgba(17,17,17,0.78);
+      --panel-strong: rgba(17,17,17,0.92);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.72);
+      --green: #00ff00;
+      --cyan: #00ffff;
+      --border: rgba(255,255,255,0.10);
+      --shadow: 0 12px 30px rgba(0,0,0,0.55);
+      --radius: 14px;
+      --maxw: 1100px;
+      --nav-offset: 86px; /* height of navbar */
+    }
+
+    /* Reset / Base */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Canvas background fixed behind everything */
+    #canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 0;
+    }
+
+    /* Rainbow Bar */
+    .rainbow-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(270deg, red, orange, yellow, green, cyan, blue, violet, red);
+      background-size: 400% 400%;
+      animation: rainbow 18s linear infinite;
+      z-index: 50;
+    }
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    /* Skip link for accessibility */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 8px;
+      background: #111;
+      color: #fff;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      z-index: 60;
+    }
+    .skip-link:focus {
+      left: 12px;
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    /* Layout */
+    .page {
+      position: relative;
+      z-index: 1;
+    }
+    .container {
+      width: min(var(--maxw), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    /* Header / Hero */
+    header.hero{
+      min-height: calc(100vh - var(--nav-offset));
+      padding-top: var(--nav-offset);
+      padding-bottom: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-card {
+      width: min(920px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 22px;
+      backdrop-filter: blur(10px);
+      margin-inline: auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2.2rem, 4.2vw, 3.8rem);
+      letter-spacing: 1px;
+      background: linear-gradient(270deg, purple, pink, yellow, red);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      margin: 6px 0 18px;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      color: var(--text);
+    }
+
+    .subtitle {
+      margin: 0 auto 18px;
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(10,10,10,0.55);
+      color: var(--text);
+      text-decoration: none;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+      will-change: transform;
+    }
+    .btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.18); background: rgba(10,10,10,0.75); }
+    .btn.primary { border-color: rgba(0,255,0,0.35); }
+    .btn.primary:hover { border-color: rgba(0,255,0,0.6); }
+    .btn .dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(0,255,0,0.5);
+    }
+
+    /* Nav */
+    nav.top-nav {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 55;
+      width: min(var(--maxw), calc(100% - 24px));
+    }
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .brand span {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--green);
+      padding: 8px 10px;
+      border-radius: 10px;
+      transition: background 140ms ease, transform 140ms ease;
+      outline: none;
+    }
+    .nav-links a:hover { background: rgba(0,255,0,0.12); transform: translateY(-1px); }
+    .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+    /* Sections */
+    section { padding: 56px 0; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 26px 22px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 2rem;
+      letter-spacing: 0.4px;
+    }
+
+    .muted { color: var(--muted); }
+
+    /* About grid */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .quick-facts {
+      border-left: 1px solid var(--border);
+      padding-left: 16px;
+    }
+    .fact {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+    .fact strong { color: var(--text); }
+
+    /* Skills */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .skill-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 14px;
+    }
+    .skill-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: var(--green);
+    }
+    .skill-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    /* Projects */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .project-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+    .project-card h3 {
+      margin: 4px 0 0;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+    .project-card p { margin: 0; color: var(--muted); }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .tag {
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: rgba(255,255,255,0.8);
+      background: rgba(0,0,0,0.30);
+    }
+    .project-links {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .project-links a {
+      color: var(--green);
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,255,0,0.22);
+      background: rgba(0,0,0,0.35);
+    }
+    .project-links a:hover { border-color: rgba(0,255,0,0.55); }
+
+    /* Experience */
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .role {
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .role .topline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .role .title { font-weight: 800; color: var(--text); }
+    .role .meta { color: var(--muted); font-size: 0.95rem; }
+    .role ul { margin: 0; padding-left: 18px; color: var(--muted); }
+
+    /* Contact */
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .contact-row a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.35);
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+    .contact-row a:hover { border-color: rgba(255,255,255,0.2); }
+    .contact-row a strong { color: var(--green); }
+
+    footer {
+      padding: 30px 0 40px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .projects-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .about-grid { grid-template-columns: 1fr; }
+      .quick-facts { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 14px; }
+    }
+    @media (max-width: 700px) {
+      .nav-inner { border-radius: 16px; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: 1fr; }
+      header.hero { padding-top: 120px; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .rainbow-bar { animation: none; }
+      .btn, .project-card, .nav-links a { transition: none; }
+    }
+  </style>
+
+  <!-- Structured data (helps recruiters + SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Karanpreet Singh",
+    "jobTitle": "SOC Analyst / Security Engineer",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Phoenix",
+      "addressRegion": "AZ",
+      "addressCountry": "US"
+    },
+    "url": "https://YOUR_DOMAIN_HERE/",
+    "sameAs": [
+      "https://www.linkedin.com/in/YOUR_LINKEDIN/",
+      "https://github.com/YOUR_GITHUB/"
+    ]
+  }
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#about">Skip to content</a>
+  <div class="rainbow-bar" aria-hidden="true"></div>
+
+  <!-- Canvas background -->
+  <canvas id="canvas" aria-hidden="true"></canvas>
+
+  <!-- Fixed navigation -->
+  <nav class="top-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="Go to top">
+        <span>&gt;_</span> karanpreet
+      </a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#projects">Projects</a>
+        <a href="#experience">Experience</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page" id="top">
+    <!-- HERO -->
+    <header class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <h1>Karanpreet Singh</h1>
+          <p class="tagline">SOC Analyst • Security Engineer • Malware Analysis • Windows Internals</p>
+
+          <p class="subtitle">
+            I analyze malware and Windows drivers using static + dynamic techniques (IDA Pro, x64dbg, WinDbg, Ghidra),
+            extract IOCs/persistence behaviors, and build C++/Python tooling to accelerate triage.
+            I translate low-level findings into practical detection opportunities mapped to MITRE ATT&CK for SOC/endpoint teams.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn primary" href="#projects"><span class="dot"></span> View Projects</a>
+            <a class="btn" href="./Karanpreet_Singh_Resume.pdf" target="_blank" rel="noopener">Resume (PDF)</a>
+            <a class="btn" href="https://www.linkedin.com/in/YOUR_LINKEDIN/" target="_blank" rel="noopener">LinkedIn</a>
+            <a class="btn" href="https://github.com/YOUR_GITHUB/" target="_blank" rel="noopener">GitHub</a>
+            <a class="btn" href="mailto:YOUR_EMAIL@EXAMPLE.COM">Email</a>
+          </div>
+
+          
+        </div>
+      </div>
+    </header>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="container">
+        <div class="panel">
+          <h2>About</h2>
+
+          <div class="about-grid">
+            <div>
+              <p class="muted">
+                I’m a cybersecurity analyst focused on turning deep technical investigation into defensive outcomes.
+                I work across malware analysis, reverse engineering, and Windows internals to identify suspicious behavior patterns
+                and convert them into detection ideas, triage playbooks, and incident response notes.
+              </p>
+
+              <p class="muted">
+                My approach is SOC-driven: validate alerts, enrich with context, extract IOCs, map behaviors to MITRE ATT&CK,
+                and document findings for fast escalation and remediation.
+              </p>
+
+              <p class="muted" style="margin-top:12px;">
+                <strong>What I’m targeting:</strong> SOC Analyst (Tier 1/2), Detection Engineering, Security Engineer (blue team),
+                Incident Response support roles.
+              </p>
+
+              <p class="muted" style="margin-top:12px;">
+                <strong>TODO:</strong> Replace this paragraph with a 2–3 sentence “story” that matches your resume and target jobs.
+              </p>
+            </div>
+
+            <div class="quick-facts" aria-label="Quick facts">
+              <p class="fact"><strong>Location:</strong> Phoenix, AZ (Remote Eligible)</p>
+              <p class="fact"><strong>Strengths:</strong> Malware triage • Windows internals • IOC extraction</p>
+              <p class="fact"><strong>Outputs:</strong> Write-ups • Detection notes • Tooling (C++/Python)</p>
+              <p class="fact"><strong>Focus:</strong> SOC workflows + defensive detection</p>
+              <p class="fact"><strong>Availability:</strong> Open to SOC/Security roles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+      <div class="container">
+        <div class="panel">
+          <h2>Skills</h2>
+          <p class="muted">SOC-ready skills and tooling aligned to incident response, detection, and endpoint security.</p>
+
+          <div class="skills-grid">
+            <div class="skill-card">
+              <h3>Core SOC Competencies</h3>
+              <ul>
+                <li>Alert triage • event correlation • escalation notes</li>
+                <li>IOC enrichment • timeline building • containment support</li>
+                <li>Threat intelligence usage • reporting • documentation</li>
+                <li>MITRE ATT&CK mapping • detection opportunity write-ups</li>
+              </ul>
+            </div>
+
+            <div class="skill-card">
+              <h3>Malware Analysis & Reverse Engineering</h3>
+              <ul>
+                <li>Static/dynamic analysis workflows (controlled lab)</li>
+                <li>IOC extraction: strings/imports/network indicators</li>
+                <li>Persistence behaviors & API abuse patterns</li>
+                <li>Write-ups that translate findings to detections</li>
+              </ul>
+            </div>
+
+            <div class="skill-card">
+              <h3>Windows Internals & Endpoint Research</h3>
+              <ul>
+                <li>PE/NT headers, memory protections, suspicious behaviors</li>
+                <li>Driver/IOCTL handler review concepts (lab research)</li>
+                <li>WinDbg debugging and investigation workflows</li>
+              </ul>
+            </div>
+
+            <div class="skill-card">
+              <h3>Tooling & Automation</h3>
+              <ul>
+                <li>C++ / Python for triage automation and reporting</li>
+                <li>Hashing, metadata extraction, CSV/JSON output</li>
+                <li>PowerShell for workflow automation</li>
+              </ul>
+            </div>
+
+            <div class="skill-card">
+              <h3>Security Tools</h3>
+              <ul>
+                <li>IDA Pro, Ghidra, x64dbg, WinDbg</li>
+                <li>Wireshark, Nmap, Process Hacker, PE tools</li>
+                <li>SIEM familiarity (e.g., Splunk) — add specifics you’ve used</li>
+              </ul>
+            </div>
+
+            <div class="skill-card">
+              <h3>Frameworks</h3>
+              <ul>
+                <li>MITRE ATT&CK (mapping behaviors to tactics/techniques)</li>
+                <li>Incident response process basics (containment → recovery)</li>
+                <li>Detection engineering mindset (signal → rule → validation)</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top:14px;">
+            <strong>Certifications:</strong> <span class="muted">CompTia Security+, Google Cybersecurity Professional, CISSP (in progress...).</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="container">
+        <div class="panel">
+          <h2>Projects</h2>
+          <p class="muted">
+            Projects focused on SOC relevance: triage automation, IOC extraction, and translating low-level analysis into detections.
+            Replace links and screenshots with real ones as you publish.
+          </p>
+
+          <div class="projects-grid">
+            <article class="project-card">
+              <img src="project-malware-triage.jpg" alt="Malware triage tooling project banner" loading="lazy" />
+              <h3>Malware Triage Tooling (C++/Python)</h3>
+              <p>
+                Automated PE metadata parsing, imports/exports, strings, and cryptographic hashes (MD5/SHA-1/SHA-256),
+                producing structured reports (CSV/JSON) for faster SOC triage and documentation.
+              </p>
+              <div class="tags">
+                <span class="tag">C++</span><span class="tag">Python</span><span class="tag">PE</span><span class="tag">IOCs</span><span class="tag">Automation</span>
+              </div>
+              <div class="project-links">
+                <a href="https://github.com/YOUR_GITHUB/YOUR_REPO_1" target="_blank" rel="noopener">Code</a>
+                <a href="https://YOUR_DOMAIN_HERE/writeups/malware-triage" target="_blank" rel="noopener">Write-up</a>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <img src="project-detection-notes.jpg" alt="Detection engineering notes banner" loading="lazy" />
+              <h3>Detection Notes (MITRE ATT&CK mapped)</h3>
+              <p>
+                Wrote SOC-ready detection notes based on observed malware behaviors: persistence, injection patterns, suspicious memory protections,
+                and high-signal artifacts. Structured write-ups for escalation and rule creation.
+              </p>
+              <div class="tags">
+                <span class="tag">Detection</span><span class="tag">MITRE</span><span class="tag">IR</span><span class="tag">Write-ups</span>
+              </div>
+              <div class="project-links">
+                <a href="https://YOUR_DOMAIN_HERE/writeups/detections" target="_blank" rel="noopener">Write-ups</a>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <img src="project-log-analysis.jpg" alt="Log analysis banner" loading="lazy" />
+              <h3>Log Analysis & Alert Triage Practice</h3>
+              <p>
+                Built a structured workflow for alert triage: normalize events, enrich with context, identify suspicious sequences,
+                and write clear incident notes. (Add your SIEM platform, lab, or dataset source here.)
+              </p>
+              <div class="tags">
+                <span class="tag">SIEM</span><span class="tag">Triage</span><span class="tag">Investigation</span><span class="tag">Reporting</span>
+              </div>
+              <div class="project-links">
+                <a href="https://YOUR_DOMAIN_HERE/writeups/triage" target="_blank" rel="noopener">Process</a>
+              </div>
+            </article>
+          </div>
+
+          <p class="muted" style="margin-top:14px;">
+            Tip: If a repo must stay private, publish a public “sanitized write-up” with screenshots + what you learned + what signals you extracted.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience">
+      <div class="container">
+        <div class="panel">
+          <h2>Experience</h2>
+
+          <div class="timeline">
+            <div class="role">
+              <div class="topline">
+                <div class="title">Security / Malware Analysis Experience</div>
+                <div class="meta">TODO • Add company + dates exactly as on resume</div>
+              </div>
+              <ul>
+                <li>Performed static + dynamic analysis of malware and Windows binaries to extract IOCs, persistence behaviors, and suspicious patterns.</li>
+                <li>Built triage automation to standardize outputs (hashes, metadata, strings, imports) and speed investigation workflows.</li>
+                <li>Documented findings for SOC/endpoint teams: IOC sets, behavioral summaries, and detection opportunities mapped to MITRE ATT&CK.</li>
+                <li>Used debugging tools in controlled environments to trace runtime behavior and validate hypotheses.</li>
+              </ul>
+              <p class="muted" style="margin-top:10px;">
+                Replace the title/meta and bullets to exactly match your real roles. Keep the SOC language, keep it truthful.
+              </p>
+            </div>
+
+            <div class="role">
+              <div class="topline">
+                <div class="title">Additional Experience</div>
+                <div class="meta">Optional • Keep only if relevant or shows reliability</div>
+              </div>
+              <ul>
+                <li>TODO — add 1–2 bullets max if it supports communication, engineering discipline, or security relevance.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="container">
+        <div class="panel">
+          <h2>Contact</h2>
+          <p class="muted">
+            The fastest way to reach me is email. I’m open to SOC Analyst and Security Engineer opportunities (remote or Phoenix-area).
+          </p>
+
+          <div class="contact-row">
+            <a href="mailto:YOUR_EMAIL@EXAMPLE.COM"><strong>Email</strong> → YOUR_EMAIL@EXAMPLE.COM</a>
+            <a href="https://www.linkedin.com/in/YOUR_LINKEDIN/" target="_blank" rel="noopener"><strong>LinkedIn</strong> → /in/YOUR_LINKEDIN</a>
+            <a href="https://github.com/YOUR_GITHUB/" target="_blank" rel="noopener"><strong>GitHub</strong> → /YOUR_GITHUB</a>
+          </div>
+
+          <p class="muted" style="margin-top:12px;">
+            If you’re a recruiter: resume is available above, and I can walk through my triage tooling + analysis workflow live.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>© <span id="year"></span> Karanpreet Singh • Built with HTML/CSS/JS • SOC / Security Engineer focused</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ====== Small UX helpers ======
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Improve anchor jump for fixed nav
+    (function () {
+      const offset = 86;
+      document.querySelectorAll("section[id]").forEach(sec => {
+        sec.style.scrollMarginTop = offset + "px";
+      });
+    })();
+
+    // ====== Particle background (fixed canvas, performance-friendly) ======
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d", { alpha: true });
+
+    function resizeCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas, { passive: true });
+
+    const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const particles = [];
+    const particleCount = prefersReducedMotion ? 0 : 80;
+    const maxDistance = 120;
+    let mouse = { x: null, y: null };
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    }, { passive: true });
+
+    window.addEventListener("mouseout", () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.vx = (Math.random() - 0.5) * 0.45;
+        this.vy = (Math.random() - 0.5) * 0.45;
+        this.r = 2;
+      }
+      move() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+        if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+    function connectParticles() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          const dx = particles[a].x - particles[b].x;
+          const dy = particles[a].y - particles[b].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < maxDistance) {
+            ctx.strokeStyle = `rgba(255,255,255,${1 - dist / maxDistance})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function connectMouse() {
+      if (mouse.x === null || mouse.y === null) return;
+      for (const p of particles) {
+        const dist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+        if (dist < maxDistance) {
+          ctx.strokeStyle = `rgba(0,255,255,${1 - dist / maxDistance})`;
+          ctx.lineWidth = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      for (const p of particles) { p.move(); p.draw(); }
+      connectParticles();
+      connectMouse();
+
+      requestAnimationFrame(animate);
+    }
+
+    if (!prefersReducedMotion) animate();
+  </script>
+</body>
+</html>
